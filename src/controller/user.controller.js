@@ -6,7 +6,7 @@ import { ApiResponse } from "../utils/ApiRespose.js";
 
 const generateAccessandRefreshToken=async(userId)=>{
     try {
-        const user=await User.findById({userId});
+        const user=await User.findById(userId);
         const accessToken=user.generateAccessToken();
         const refreshToken=user.generateRefreshToken();
 
@@ -101,7 +101,7 @@ export const loginUser= asyncHandler(async(req,res)=>{
 
 
         const {email,userName, password}=req.body;
-        if(!(userName || email)){
+        if((!userName && !email)){
             throw new ApiError(400, "username or email is required")
         }
 
@@ -115,14 +115,14 @@ export const loginUser= asyncHandler(async(req,res)=>{
       if(!isPasswordValid){
         throw new ApiError(400,"Invalid user cradiential")
       }
-      const {accessToken, refreshToken}=generateAccessandRefreshToken(user._id);
+      const {accessToken, refreshToken}=await generateAccessandRefreshToken(user._id);
 
       const loggedInUser= await User.findById(user._id).select("-password -refreshToken");
       const option={
         httpOnly:true,
         secure:true
       }
-      res.status(200)
+      return res.status(200)
       .cookie("accessToken", accessToken, option)
       .cookie("refreshToken", refreshToken, option)
       .json(
@@ -136,11 +136,11 @@ export const loginUser= asyncHandler(async(req,res)=>{
 
 
 })
-export const logoutUser=asyncHandler(async(req,res)=>{
+   export const logoutUser=asyncHandler(async(req,res)=>{
    
    await User.findByIdAndUpdate( req.user._id,{
-        $set:{
-            refreshToken:undefined
+        $unset:{
+            refreshToken:1
         }
     },
         {
@@ -154,8 +154,8 @@ export const logoutUser=asyncHandler(async(req,res)=>{
 
       return res
       .status(200)
-      .clearCookie("accessToken")
-      .clearCookie("refreshToken")
+      .clearCookie("accessToken",option)
+      .clearCookie("refreshToken",option)
       .json(new ApiResponse(200,{}," User Logged out"))
 
 
