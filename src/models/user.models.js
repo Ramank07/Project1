@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 
 
 const userSchema=new Schema({
-    name:{
+    userName:{
         type: String, 
         required:true,
         unique:true,
@@ -29,7 +29,7 @@ const userSchema=new Schema({
         required:true,
         
     },
-    converImagge:{
+    coverImage:{
         type: String, //cloudinary
         
         
@@ -42,7 +42,7 @@ const userSchema=new Schema({
         type:String,
         required:[true,"Password is required"]
     },
-    refresToken:{
+    refreshToken:{
         type:String
     }
 }, 
